@@ -5,9 +5,8 @@ import base64
 import json
 import zipfile as zf
 import shutil
-import logging
+from log_setup import logger
 
-logger = logging.getLogger(__name__)
 
 class DaylioPickup:
     """class designed for picking up backup data, decoding it, and saving it as json
@@ -20,10 +19,10 @@ class DaylioPickup:
         : 
     """
     
-    expected_cwd: str = "MoodDashboard"
+    expected_cwd: str = "daylio-mood-dash"
     
-    def __init__(self, pickup_dir: str = Path.home() / "OneDrive/DaylioData"):
-        logger.info("Checking CWD is set to MoodDashboard")
+    def __init__(self, pickup_dir: Path = Path.home() / "OneDrive/DaylioData"):
+        logger.info(f"Checking CWD is set to {self.expected_cwd}")
         self.__set_cwd()
         
         self.pickup_dir = pickup_dir
@@ -37,14 +36,14 @@ class DaylioPickup:
     
     def __set_cwd(self):
         if Path.cwd().name != self.expected_cwd:
-            logger.info("CWD not 'MoodDashboard' searching for correct directory...")
+            logger.info(f"CWD not '{self.expected_cwd}' searching for correct directory...")
             for folder in Path.home().rglob(self.expected_cwd):
                 if folder.is_dir() and folder.name == self.expected_cwd:
-                    logger.info("'MoodDashboard' directory found, changing working directory")
+                    logger.info(f"'{self.expected_cwd}' directory found, changing working directory")
                     os.chdir(str(folder))
                     break
             else:
-                logger.error("'MoodDashboard' does not exist on this system")
+                logger.error(f"'{self.expected_cwd}' does not exist on this system")
                 raise FileNotFoundError(f'{self.expected_cwd} does not exist')
     
     def __find_backup_file(self):
