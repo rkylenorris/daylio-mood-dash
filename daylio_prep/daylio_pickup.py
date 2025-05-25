@@ -9,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class DaylipPickup:
+class DaylioPickup:
     """class designed for picking up backup data, decoding it, and saving it as json
 
     Raises:
