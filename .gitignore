@@ -13,6 +13,7 @@ env
 daylio_app_logs.db
 __pycache__/
 daylio_prep/__pycache__/
+.vscode/
 
 # Distribution / packaging
 .Python

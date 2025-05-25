@@ -1,9 +1,7 @@
 import pandas as pd
 from pathlib import Path
 import json
-import logging
-
-logger = logging.getLogger(__name__)
+from log_setup import logger
 
 
 class InvalidDaylioTable(Exception):
@@ -19,7 +17,7 @@ class ColumnInfo:
         self.type_name = type_name
         self.kind = kind
 
-class DaylioCleaner:
+class DaylioTable:
     
     def __init__(self, name: str, df: pd.DataFrame, columns: list[ColumnInfo]):
         logger.info(f"Creating object instance for table {name}...")
@@ -69,7 +67,7 @@ class DaylioCleaner:
         self.table[cols].to_sql(self.name, connection, if_exists='replace', index=False)
 
 
-def create_entry_tags(entries: DaylioCleaner, columns: list[ColumnInfo]):
+def create_entry_tags(entries: DaylioTable, columns: list[ColumnInfo]):
     logger.info("Creating entry_tags table from 'dayEntries' table...")
     if entries.name != 'dayEntries':
         raise InvalidDaylioTable('Must past "dayEntries" table to create entry tags')
@@ -78,14 +76,14 @@ def create_entry_tags(entries: DaylioCleaner, columns: list[ColumnInfo]):
     with pd.option_context('future.no_silent_downcasting', True):
         tags_df['tag'] = tags_df['tag'].fillna(0).astype(int)
 
-    return DaylioCleaner('entry_tags', tags_df, columns)
+    return DaylioTable('entry_tags', tags_df, columns)
 
 
-def create_mood_groups(columns: list[ColumnInfo]) -> DaylioCleaner:
+def create_mood_groups(columns: list[ColumnInfo]) -> DaylioTable:
     logger.info("Creating mood_groups table from json data...")
     mood_groups_path = Path.cwd() / "data" / "mood_groups.json"
     df = pd.read_json(mood_groups_path)
-    return DaylioCleaner('mood_groups', df, columns)
+    return DaylioTable('mood_groups', df, columns)
 
 
 def get_table_info(table_name: str) -> list[ColumnInfo]:

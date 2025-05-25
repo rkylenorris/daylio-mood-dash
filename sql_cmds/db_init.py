@@ -1,10 +1,8 @@
 from datetime import datetime
-import logging
+from log_setup import logger
 
 from .sql_cmds import create_db_conn, execute_sql_script, Path, execute_sql_command
 from .calendar_cmds import create_rolling_calendar
-
-logger = logging.getLogger(__name__)
 
 home_dir = Path(__file__).parent.parent
 data_dir = home_dir / "data"
