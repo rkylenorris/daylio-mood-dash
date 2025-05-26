@@ -7,7 +7,10 @@ __pycache__/
 *.so
 
 # custom
-data/
+data/archive/
+data/daylio.db
+data/backup.daylio
+data/daylio.json
 .venv/
 env
 daylio_app_logs.db

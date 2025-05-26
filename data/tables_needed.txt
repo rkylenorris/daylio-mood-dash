@@ -1,0 +1,7 @@
+customMoods
+tags
+dayEntries
+goals
+prefs
+tag_groups
+goalEntries
