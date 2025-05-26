@@ -3,23 +3,10 @@ DROP VIEW IF EXISTS v_entry_details ;
 DROP VIEW IF EXISTS v_daily_avgs ;
 DROP VIEW IF EXISTS v_sleep_summary ;
 DROP VIEW IF EXISTS v_sleep_trend ;
+DROP VIEW IF EXISTS v_goal_summary ;
+DROP VIEW IF EXISTS v_goal_calendar ;
+DROP VIEW IF EXISTS v_goal_progress_by_month ;
 
-
--- CREATE VIEW v_activity_summary
--- AS
--- SELECT
---     tg.name as [group],
---     t.name as [activity],
---     COUNT(t.name) AS [count]
--- FROM dayEntries AS de
--- LEFT JOIN entry_tags as et on de.id = et.entry_id
--- LEFT JOIN tags AS t ON et.tag = t.id
--- LEFT JOIN tag_groups AS tg ON t.id_tag_group = tg.id
--- where date(de.date) > date('now', '-90 days')
--- group by tg.name, t.name
--- having count > 0
--- order by count desc, [group]
--- limit 20;
 
 CREATE VIEW v_activity_summary AS
 WITH ranked_activities AS (
