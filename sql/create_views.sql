@@ -5,21 +5,44 @@ DROP VIEW IF EXISTS v_sleep_summary ;
 DROP VIEW IF EXISTS v_sleep_trend ;
 
 
-CREATE VIEW v_activity_summary
-AS
-SELECT
-    tg.name as [group],
-    t.name as [activity],
-    COUNT(t.name) AS [count]
-FROM dayEntries AS de
-LEFT JOIN entry_tags as et on de.id = et.entry_id
-LEFT JOIN tags AS t ON et.tag = t.id
-LEFT JOIN tag_groups AS tg ON t.id_tag_group = tg.id
-where date(de.date) > date('now', '-90 days')
-group by tg.name, t.name
-having count > 0
-order by count desc, [group]
-limit 20;
+-- CREATE VIEW v_activity_summary
+-- AS
+-- SELECT
+--     tg.name as [group],
+--     t.name as [activity],
+--     COUNT(t.name) AS [count]
+-- FROM dayEntries AS de
+-- LEFT JOIN entry_tags as et on de.id = et.entry_id
+-- LEFT JOIN tags AS t ON et.tag = t.id
+-- LEFT JOIN tag_groups AS tg ON t.id_tag_group = tg.id
+-- where date(de.date) > date('now', '-90 days')
+-- group by tg.name, t.name
+-- having count > 0
+-- order by count desc, [group]
+-- limit 20;
+
+CREATE VIEW v_activity_summary AS
+WITH ranked_activities AS (
+    SELECT
+        tg.name AS [group],
+        t.name AS [activity],
+        COUNT(t.name) AS [count],
+        ROW_NUMBER() OVER (
+            PARTITION BY tg.name
+            ORDER BY COUNT(t.name) DESC
+        ) AS rank
+    FROM dayEntries AS de
+    LEFT JOIN entry_tags AS et ON de.id = et.entry_id
+    LEFT JOIN tags AS t ON et.tag = t.id
+    LEFT JOIN tag_groups AS tg ON t.id_tag_group = tg.id
+    WHERE date(de.date) > date('now', '-90 days')
+    GROUP BY tg.name, t.name
+)
+SELECT [group], activity, [count]
+FROM ranked_activities
+WHERE rank <= 10
+ORDER BY [group], [count] DESC;
+
 
 CREATE VIEW v_entry_details
 AS
@@ -82,3 +105,47 @@ LEFT JOIN tags AS t ON et.tag = t.id
 where  t.id in (75, 76, 77, 152)
 and date(de.date) > date('now', '-90 days')
 group by de.date, t.name;
+
+CREATE VIEW v_goal_summary AS
+SELECT
+    g.goal_id,
+    g.name AS goal_name,
+    g.note AS goal_note,
+    tg.name AS tag_group,
+    t.name AS tag_name,
+    g.created_at AS goal_start,
+    COALESCE(g.date_end, g.end_date) AS goal_end,
+    COUNT(ge.id) AS times_completed,
+    MIN(ge.date) AS first_checkin,
+    MAX(ge.date) AS last_checkin
+FROM goals g
+LEFT JOIN tags t ON g.id_tag = t.id
+LEFT JOIN tag_groups tg ON t.id_tag_group = tg.id
+LEFT JOIN goalEntries ge ON g.goal_id = ge.goalId
+GROUP BY g.goal_id
+ORDER BY times_completed DESC, goal_start;
+
+
+CREATE VIEW v_goal_calendar AS
+SELECT
+    g.goal_id,
+    g.name AS goal_name,
+    cal.Date AS calendar_day,
+    CASE WHEN ge.id IS NOT NULL THEN 1 ELSE 0 END AS goal_completed
+FROM goals g
+JOIN calendar cal ON cal.Date BETWEEN DATE(g.created_at) AND COALESCE(g.date_end, g.end_date, DATE('now'))
+LEFT JOIN goalEntries ge ON g.goal_id = ge.goalId AND ge.date = cal.Date
+ORDER BY g.goal_id, cal.Date;
+
+
+CREATE VIEW v_goal_progress_by_month AS
+SELECT
+    g.goal_id,
+    g.name AS goal_name,
+    cal.MonthYear,
+    COUNT(ge.id) AS completions
+FROM goals g
+JOIN goalEntries ge ON g.goal_id = ge.goalId
+JOIN calendar cal ON cal.Date = ge.date
+GROUP BY g.goal_id, cal.MonthYear
+ORDER BY g.goal_id, cal.MonthYear;

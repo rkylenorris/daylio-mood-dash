@@ -1,4 +1,3 @@
-from log_setup import logger
 from pathlib import Path
 from daylio_prep import DaylioPickup, DaylioTable, get_table_info, create_entry_tags, create_mood_groups
 from sql_cmds import create_tables, create_views, insert_prefs, create_db_conn
@@ -9,7 +8,7 @@ import altair as alt
 
 
 def daylio_data_prep():
-
+    from log_setup import logger
     logger.info("Starting Daylio data extraction process...")
 
     pickup = DaylioPickup()
@@ -52,31 +51,40 @@ def daylio_data_prep():
     daylio_tables.append(
         create_mood_groups(mood_groups_columns)
     )
-
-    db_conn = create_db_conn()
-
+    
     create_tables()
 
     for table in daylio_tables:
-        table.to_sql(db_conn)
-        logger.info(f"Table {table.name} written to database")
+        with create_db_conn() as db_conn:
+            table.to_sql(db_conn)
+            logger.info(f"Table {table.name} written to database")
+            db_conn.commit()
+            
 
-    db_conn.commit()
-    insert_prefs(daylio_data['prefs'], db_conn)
+    insert_prefs(daylio_data['prefs'])
 
     create_views()
 
 
 def create_streamlit_app():
-    conn = create_db_conn()
+    from log_setup import logger
+    logger.info("Starting Streamlit app...")
+    if "initialized" not in st.session_state:
+        logger.info("Initializing Daylio Mood Dashboard...")
+        daylio_data_prep()
+        st.session_state["initialized"] = True
+
+    logger.info("Generating dashbaord...")
     st.title("Daylio Mood Dashboard")
     
     st.subheader("📈 Daily Mood Average (Last 90 Days)")
-
-    df_avg = pd.read_sql("SELECT * FROM v_daily_avgs", conn)
+    logger.info("Loading daily mood averages from database...")
+    with create_db_conn() as db_conn:
+        df_avg = pd.read_sql("SELECT * FROM v_daily_avgs", db_conn)
     df_avg['day'] = pd.to_datetime(df_avg['day'])
 
     # Altair chart with trendline
+    logger.info("Creating Altair chart for daily mood averages...")
     chart = alt.Chart(df_avg).mark_line(point=True).encode(
         x='day:T',
         y='avg_mood_value:Q'
@@ -90,33 +98,69 @@ def create_streamlit_app():
     ).mark_line(color='red', strokeDash=[4, 2])
 
     st.altair_chart(chart + trend, use_container_width=True)
-
-    # # Daily Mood Trend
-    # st.subheader("📈 Daily Mood Average (Last 90 Days)")
-    # df_avg = pd.read_sql("SELECT * FROM v_daily_avgs", conn)
-    # df_avg['day'] = pd.to_datetime(df_avg['day'])
-    # st.line_chart(df_avg.set_index("day")["avg_mood_value"])
     
     # mood entries
-    st.subheader("📊 Mood Entries by Day")
-    df_moods = pd.read_sql("SELECT * from v_entry_details", conn)
-    df_moods['day'] = pd.to_datetime(df_moods['day'])
-    st.table(df_moods.tail(15))
+    if st.checkbox("Show Mood Entries"):
+        logger.info("Loading mood entries from database...")
+        query = "SELECT * from v_entry_details where date(day) > date('now', '-14 days') order by entry_datetime desc"
+        with create_db_conn() as conn:
+            df_moods = pd.read_sql(query, conn)
+        
+        df_moods['day'] = pd.to_datetime(df_moods['day'])
+        st.subheader("📅 Mood Entries (Last 14 Days)")
+        logger.info("Displaying mood entries in Streamlit table...")
+        st.table(df_moods)
 
     # Top Activities
-    st.subheader("🏷️ Top Activities")
-    df_acts = pd.read_sql("SELECT * FROM v_activity_summary", conn)
-    st.bar_chart(df_acts.set_index("activity")["count"])
+    # st.subheader("🏷️ Top Activities Last 90 Days")
+    # with create_db_conn() as conn:
+    #     df_acts = pd.read_sql("SELECT * FROM v_activity_summary", conn)
+    # st.bar_chart(df_acts.set_index("activity")["count"])
+    
+
+    st.subheader("🏷️ Top Activities (Interactive Drilldown)")
+    logger.info("Loading activity summary from database...")
+    with create_db_conn() as conn:
+        df_acts = pd.read_sql("SELECT * FROM v_activity_summary", conn)
+
+    # Altair requires no NaNs in category columns
+    logger.info("Creating interactive activity drilldown...")
+    df_acts = df_acts.dropna(subset=["group", "activity"])
+
+    # Step 1: Dropdown to select group
+    group_list = df_acts["group"].unique().tolist()
+    selected_group = st.selectbox("Select Activity Group", group_list)
+
+    # Step 2: Filter for that group
+    filtered_df = df_acts[df_acts["group"] == selected_group]
+
+    # Step 3: Plot
+    chart = alt.Chart(filtered_df).mark_bar().encode(
+        x=alt.X("count:Q", title="Frequency"),
+        y=alt.Y("activity:N", sort="-x", title="Activity"),
+        tooltip=["activity", "count"]
+    ).properties(
+        width=600,
+        height=400,
+        title=f"Top Activities in '{selected_group}' Group"
+    )
+
+    st.altair_chart(chart, use_container_width=True)    
 
     # Sleep Quality Trend
-    st.subheader("😴 Sleep Quality Trend")
-    df_sleep = pd.read_sql("SELECT * FROM v_sleep_trend", conn)
+    st.subheader("😴 Sleep Quality Trend Last 90 Days")
+    logger.info("Loading sleep trend data from database...")
+    with create_db_conn() as conn:
+        # Ensure the view v_sleep_trend exists
+        df_sleep = pd.read_sql("SELECT * FROM v_sleep_trend", conn)
     df_sleep['day'] = pd.to_datetime(df_sleep['day'])
     pivoted = df_sleep.pivot(index='day', columns='sleep_status', values='value')
+    logger.info("Creating line chart for sleep quality trend...")
     st.line_chart(pivoted)
+    
+    # TODO: add goals section using the 3 new views
 
 
 if __name__ == "__main__":
-    daylio_data_prep()
     create_streamlit_app()
     
