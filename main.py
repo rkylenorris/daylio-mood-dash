@@ -74,7 +74,7 @@ def create_streamlit_app():
         daylio_data_prep()
         st.session_state["initialized"] = True
 
-    logger.info("Generating dashbaord...")
+    logger.info("Generating dashboard...")
     st.title("Daylio Mood Dashboard")
     
     st.subheader("📈 Daily Mood Average (Last 90 Days)")
@@ -83,7 +83,7 @@ def create_streamlit_app():
         df_avg = pd.read_sql("SELECT * FROM v_daily_avgs", db_conn)
     df_avg['day'] = pd.to_datetime(df_avg['day'])
 
-    # Altair chart with trendline
+    # Altair chart with trend line
     logger.info("Creating Altair chart for daily mood averages...")
     chart = alt.Chart(df_avg).mark_line(point=True).encode(
         x='day:T',
