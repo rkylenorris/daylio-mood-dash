@@ -6,6 +6,10 @@ import json
 import zipfile as zf
 import shutil
 from log_setup import logger
+from dotenv import load_dotenv
+load_dotenv()
+
+
 
 
 class DaylioPickup:
@@ -19,9 +23,9 @@ class DaylioPickup:
         : 
     """
     
-    expected_cwd: str = "daylio-mood-dash"
+    expected_cwd: str = os.getenv('EXPECTED_WD', 'daylio-mood-dash')
     
-    def __init__(self, pickup_dir: Path = Path.home() / "OneDrive/DaylioData"):
+    def __init__(self, pickup_dir: Path = Path(os.getenv('DAYLIO_PICKUP_DIR', 'C:/Users/YourUsername/Downloads'))):
         logger.info(f"Checking CWD is set to {self.expected_cwd}")
         self.__set_cwd()
         
