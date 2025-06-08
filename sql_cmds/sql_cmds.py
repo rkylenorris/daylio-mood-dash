@@ -23,6 +23,9 @@ def execute_sql_command(conn: sqlite3.Connection, command: str, *args):
 def execute_sql_script(conn: sqlite3.Connection, script_path: str):
     with conn:
         script = Path(script_path)
+        if not script.exists():
+            logger.error(f"SQL script {script_path} does not exist.")
+            return
         logger.info(f"Executing script: {script.name}")
         cursor = conn.cursor()
         script_text = script.read_text()
