@@ -77,6 +77,11 @@ def create_streamlit_app():
     logger.info("Generating dashboard...")
     st.title("Daylio Mood Dashboard")
     
+    with create_db_conn() as db_conn:
+        last_update = pd.read_sql("SELECT LAST_ENTRY_CREATION_TIME from prefs", db_conn).iloc[0, 0]
+    
+    st.subheader(f"Last Data Update: {last_update}")
+    
     st.subheader("📈 Daily Mood Average (Last 90 Days)")
     logger.info("Loading daily mood averages from database...")
     with create_db_conn() as db_conn:
@@ -110,12 +115,6 @@ def create_streamlit_app():
         st.subheader("📅 Mood Entries (Last 14 Days)")
         logger.info("Displaying mood entries in Streamlit table...")
         st.table(df_moods)
-
-    # Top Activities
-    # st.subheader("🏷️ Top Activities Last 90 Days")
-    # with create_db_conn() as conn:
-    #     df_acts = pd.read_sql("SELECT * FROM v_activity_summary", conn)
-    # st.bar_chart(df_acts.set_index("activity")["count"])
     
 
     st.subheader("🏷️ Top Activities (Interactive Drilldown)")
