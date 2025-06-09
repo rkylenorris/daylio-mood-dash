@@ -43,8 +43,8 @@ if isinstance(response, dict):
         print(entry["dateOfSleep"], entry["minutesAsleep"], "minutes asleep")
         entries.append(entry)
 
-with open("data/fitbit_sleep_data.json", "w") as f:
-    json.dump(entries, f, indent=2)
+with open("data\\fitbit_sleep_data.json", "w") as f:
+    json.dump(entries, f, indent=4)
  
 cleaned_entries = []   
 for entry in entries:
@@ -59,13 +59,29 @@ for entry in entries:
     start_time_readable = start_time_obj.strftime("%Y-%m-%d %H:%M")
     end_time_readable = end_time_obj.strftime("%Y-%m-%d %H:%M")
     
+    sleep_date = datetime.datetime.strptime(entry['dateOfSleep'], '%Y-%m-%d').date()
+    
+    sleep_log_type = entry.get('type', 'unknown')
+    
+    summary = entry.get('levels', {}).get('summary', {})
+    
+    if sleep_log_type == "classic":
+        asleep_count = sum(1 for entry in entry.get("levels", {}).get("data", []) if entry["level"] == "asleep")
+        awake_count = sum(1 for entry in entry.get("levels", {}).get("data", []) if entry["level"] == "awake")
+        restless_count = sum(1 for entry in entry.get("levels", {}).get("data", []) if entry["level"] == "restless")
+    else:
+        asleep_count = None
+        awake_count = None
+        restless_count = None
+        
+    
     cleaned_entries.append({
-        "date": entry['dateOfSleep'],
-        "date_object": datetime.datetime.strptime(entry['dateOfSleep'], '%Y-%m-%d').date(),
+        "date": sleep_date,
+        "date_ymd": sleep_date.strftime('%Y-%m-%d'),
         "duration_milliseconds": duration,
-        "duration_seconds": duration_td.total_seconds,  # Convert ms to seconds
-        "duration_minutes": duration// 60000,  # Convert ms to minutes
-        "duration_hours": duration // 3600000,  # Convert ms to hours
+        "duration_seconds": round(duration_td.total_seconds()),  # Convert ms to seconds
+        "duration_minutes": round(duration / 60000),  # Convert ms to minutes
+        "duration_hours": round(duration / 3600000),  # Convert ms to hours
         "duration_hhmmss": formatted_time,
         "start_time": start_time_obj,
         "start_time_ymdhm": start_time_readable,
@@ -75,12 +91,20 @@ for entry in entries:
         "minutes_asleep": entry['minutesAsleep'],
         "minutes_awake": entry['minutesAwake'],
         "main_sleep": entry['isMainSleep'],
-        "deep_sleep_count": entry['levels']['summary']['deep']['count'],
-        "deep_sleep_minutes": entry['levels']['summary']['deep']['minutes'],
-        "light_sleep_count": entry['levels']['summary']['light']['count'],
-        "light_sleep_minutes": entry['levels']['summary']['light']['minutes'],
-        "rem_sleep_count": entry['levels']['summary']['rem']['count'],
-        "rem_sleep_minutes": entry['levels']['summary']['rem']['minutes'],
-        "wake_count": entry['levels']['summary']['wake']['count'],
-        "wake_minutes": entry['levels']['summary']['wake']['minutes'],
+        "deep_sleep_count": summary.get('deep', {}).get('count', None),
+        "deep_sleep_minutes": summary.get('deep', {}).get('minutes', None),
+        "light_sleep_count": summary.get('light', {}).get('count', None),
+        "light_sleep_minutes": summary.get('light', {}).get('minutes', None),
+        "rem_sleep_count": summary.get('rem', {}).get('count', None),  
+        "rem_sleep_minutes": summary.get('rem', {}).get('minutes', None),
+        "wake_count": summary.get('wake', {}).get('count', None),
+        "wake_minutes": summary.get('wake', {}).get('minutes', None),
+        "asleep_count": asleep_count,
+        "asleep_minutes": summary.get('asleep', {}).get('minutes', None),
+        "awake_count": awake_count,
+        "awake_minutes": summary.get('awake', {}).get('minutes', None),
+        "restless_count": restless_count,
+        "restless_minutes": summary.get('restless', {}).get('minutes', None),
+        "sleep_log_type": sleep_log_type,
     })
+    
