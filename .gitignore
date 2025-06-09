@@ -17,6 +17,8 @@ daylio_app_logs.db
 __pycache__/
 daylio_prep/__pycache__/
 .vscode/
+.streamlit/
+data/fitbit_tokens.json
 
 # Distribution / packaging
 .Python
