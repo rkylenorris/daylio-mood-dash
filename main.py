@@ -1,5 +1,5 @@
 from pathlib import Path
-from daylio_prep import DaylioPickup, DaylioTable, get_table_info, create_entry_tags, create_mood_groups
+from daylio_prep import DaylioPickup, DaylioTable, get_table_info, create_entry_tags, create_mood_groups, get_fitbit_sleep_data, clean_sleep_data
 from sql_cmds import create_tables, create_views, insert_prefs, create_db_conn
 import json
 import pandas as pd
@@ -66,12 +66,32 @@ def daylio_data_prep():
     create_views()
 
 
+def update_fitbit_sleep():
+    from log_setup import logger
+    logger.info("Starting Fitbit sleep data update...")
+    
+    sleep_data = get_fitbit_sleep_data()
+    if len(sleep_data) == 0:
+        logger.warning("No Fitbit sleep data found. Skipping update.")
+        return
+
+    cleaned_sleep_data = clean_sleep_data(sleep_data)
+
+    with create_db_conn() as db_conn:
+        cleaned_sleep_data.to_sql('fitbit_sleep', db_conn, if_exists='replace', index=False)
+        logger.info("Fitbit sleep data updated in database.")
+
+    logger.info("Fitbit sleep data update completed.")
+
+
 def create_streamlit_app():
     from log_setup import logger
     logger.info("Starting Streamlit app...")
     if "initialized" not in st.session_state:
         logger.info("Initializing Daylio Mood Dashboard...")
         daylio_data_prep()
+        update_fitbit_sleep()
+        logger.info("Initialization complete.")
         st.session_state["initialized"] = True
 
     logger.info("Generating dashboard...")
