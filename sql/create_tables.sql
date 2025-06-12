@@ -129,3 +129,37 @@ DROP TABLE IF EXISTS entry_tags   ;
         tag TEXT,
         FOREIGN KEY (entry_id) REFERENCES dayEntries(id)
     );
+
+CREATE TABLE fitbit_sleep (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL,
+    duration_milliseconds INTEGER,
+    duration_seconds INTEGER,
+    duration_minutes INTEGER,
+    duration_hours INTEGER,
+    duration_hhmmss TEXT,
+    sleep_type TEXT,
+    start_time TEXT NOT NULL UNIQUE,
+    start_time_ymdhm TEXT,
+    end_time TEXT,
+    end_time_ymdhm TEXT,
+    efficiency INTEGER,
+    minutes_asleep INTEGER,
+    minutes_awake INTEGER,
+    main_sleep BOOLEAN,
+    deep_sleep_count INTEGER,
+    deep_sleep_minutes INTEGER,
+    light_sleep_count INTEGER,
+    light_sleep_minutes INTEGER,
+    rem_sleep_count INTEGER,
+    rem_sleep_minutes INTEGER,
+    wake_count INTEGER,
+    wake_minutes INTEGER,
+    asleep_count INTEGER,
+    asleep_minutes INTEGER,
+    awake_count INTEGER,
+    awake_minutes INTEGER,
+    restless_count INTEGER,
+    restless_minutes INTEGER,
+    sleep_log_type TEXT
+);
