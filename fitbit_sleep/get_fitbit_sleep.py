@@ -138,7 +138,7 @@ def clean_sleep_data(sleep_entries=get_fitbit_sleep_data()):
             "duration_milliseconds": duration,
             "duration_seconds": round(duration_td.total_seconds()),
             "duration_minutes": round(duration / 60000),  # Convert ms to minutes
-            "duration_hours": round(duration / 3600000),  # Convert ms to hours
+            "duration_hours": round(duration / 3600000, 1),  # Convert ms to hours
             "duration_hhmmss": formatted_time,
             "sleep_type": sleep_type,
             "start_time": start_time_obj,
