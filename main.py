@@ -1,6 +1,7 @@
 from pathlib import Path
-from daylio_prep import DaylioPickup, DaylioTable, get_table_info, create_entry_tags, create_mood_groups, get_fitbit_sleep_data, clean_sleep_data
+from daylio_prep import DaylioPickup, DaylioTable, get_table_info, create_entry_tags, create_mood_groups
 from sql_cmds import create_tables, create_views, insert_prefs, create_db_conn
+from fitbit_sleep import get_fitbit_sleep_data, clean_sleep_data
 import json
 import pandas as pd
 import streamlit as st
@@ -63,8 +64,6 @@ def daylio_data_prep():
 
     insert_prefs(daylio_data['prefs'])
 
-    create_views()
-
 
 def update_fitbit_sleep():
     from log_setup import logger
@@ -91,6 +90,7 @@ def create_streamlit_app():
         logger.info("Initializing Daylio Mood Dashboard...")
         daylio_data_prep()
         update_fitbit_sleep()
+        create_views()
         logger.info("Initialization complete.")
         st.session_state["initialized"] = True
 
@@ -164,20 +164,7 @@ def create_streamlit_app():
         title=f"Top Activities in '{selected_group}' Group"
     )
 
-    st.altair_chart(chart, use_container_width=True)    
-
-    # Sleep Quality Trend
-    st.subheader("😴 Sleep Quality Trend Last 90 Days")
-    logger.info("Loading sleep trend data from database...")
-    with create_db_conn() as conn:
-        # Ensure the view v_sleep_trend exists
-        df_sleep = pd.read_sql("SELECT * FROM v_sleep_trend", conn)
-    df_sleep['day'] = pd.to_datetime(df_sleep['day'])
-    pivoted = df_sleep.pivot(index='day', columns='sleep_status', values='value')
-    logger.info("Creating line chart for sleep quality trend...")
-    st.line_chart(pivoted)
-    
-    # TODO: add goals section using the 3 new views
+    st.altair_chart(chart, use_container_width=True)
 
 
 if __name__ == "__main__":
