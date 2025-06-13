@@ -154,7 +154,7 @@ SELECT
         WHEN duration_hours <= 4 THEN 'Poor'
         WHEN duration_hours <= 6 THEN 'Fair'
         WHEN duration_hours <= 8 THEN 'Good'
-        ELSE 'Excellent'
+        ELSE 'Too Much'
     END AS sleep_quality_label
 FROM fitbit_sleep
 WHERE sleep_type != 'nap'
