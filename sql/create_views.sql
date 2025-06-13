@@ -136,3 +136,34 @@ JOIN goalEntries ge ON g.goal_id = ge.goalId
 JOIN calendar cal ON cal.Date = ge.date
 GROUP BY g.goal_id, cal.MonthYear
 ORDER BY g.goal_id, cal.MonthYear;
+
+CREATE VIEW v_sleep_main_per_day AS
+SELECT 
+    [date],
+    duration_hours,
+    CASE
+        WHEN duration_hours <= 2 THEN 0
+        WHEN duration_hours <= 4 THEN 1
+        WHEN duration_hours <= 6 THEN 2
+        WHEN duration_hours <= 8 THEN 3
+        ELSE 4
+    END AS sleep_quality_score,
+    
+    CASE
+        WHEN duration_hours <= 2 THEN 'Very Poor'
+        WHEN duration_hours <= 4 THEN 'Poor'
+        WHEN duration_hours <= 6 THEN 'Fair'
+        WHEN duration_hours <= 8 THEN 'Good'
+        ELSE 'Excellent'
+    END AS sleep_quality_label
+FROM fitbit_sleep
+WHERE sleep_type != 'nap'
+  AND (
+      date, duration_minutes
+  ) IN (
+      SELECT date, MAX(duration_minutes)
+      FROM fitbit_sleep
+      WHERE sleep_type != 'nap'
+      GROUP BY date
+  );
+
