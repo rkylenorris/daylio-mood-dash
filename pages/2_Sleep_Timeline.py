@@ -2,9 +2,9 @@ from sql_cmds import create_db_conn, read_sql_view_to_df
 import streamlit as st
 import plotly.express as px
 
-query = "SELECT * FROM v_sleep_timeline"
+view = "v_sleep_main_per_day"
 
-df = read_sql_view_to_df(create_db_conn(), query)
+df = read_sql_view_to_df(create_db_conn(), view)
 st.title("Sleep Timeline")
 
 fig_bar = px.bar(
