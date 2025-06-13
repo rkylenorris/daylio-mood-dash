@@ -136,7 +136,7 @@ CREATE TABLE fitbit_sleep (
     duration_milliseconds INTEGER,
     duration_seconds INTEGER,
     duration_minutes INTEGER,
-    duration_hours INTEGER,
+    duration_hours FLOAT,
     duration_hhmmss TEXT,
     sleep_type TEXT,
     start_time TEXT NOT NULL UNIQUE,
