@@ -163,3 +163,13 @@ CREATE TABLE fitbit_sleep (
     restless_minutes INTEGER,
     sleep_log_type TEXT
 );
+
+CREATE TABLE IF NOT EXISTS topics (
+    id INTEGER PRIMARY KEY,
+    topic TEXT NOT NULL,
+    details TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME,
+    covered BOOLEAN DEFAULT 0,
+    covered_at DATETIME
+);
