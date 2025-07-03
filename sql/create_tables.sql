@@ -69,7 +69,7 @@ DROP TABLE IF EXISTS entry_tags   ;
         goal_id INTEGER,
         created_at DATETIME,
         id_tag INTEGER,
-        end_date DATEIME,
+        end_date DATETIME,
         name TEXT,
         note TEXT,
         date DATE,
@@ -83,7 +83,7 @@ DROP TABLE IF EXISTS entry_tags   ;
     CREATE TABLE IF NOT EXISTS prefs (
         AUTO_BACKUP_IS_ON BOOLEAN,
         LAST_DAYS_IN_ROWS_NUMBER INTEGER,
-        DAYS_IN_ROW_LONGEST_CHAIN INTERGER,
+        DAYS_IN_ROW_LONGEST_CHAIN INTEGER,
         LAST_ENTRY_CREATION_TIME DATETIME
     );
 
