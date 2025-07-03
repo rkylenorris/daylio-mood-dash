@@ -12,13 +12,18 @@ def create_db_conn(db_path: str = "data/daylio.db") -> sqlite3.Connection:
     """
     return sqlite3.connect(db_path)
 
-def execute_sql_command(conn: sqlite3.Connection, command: str, *args):
+def execute_sql_command(conn: sqlite3.Connection, command: str, commit: bool = True, *args):
     with conn:
         cursor = conn.cursor()
         if args:
             cursor.execute(command, *args)
         else:
             cursor.execute(command)
+            
+        if commit:
+            conn.commit()
+        else:
+            return cursor.fetchall()
 
 def execute_sql_script(conn: sqlite3.Connection, script_path: str):
     with conn:
