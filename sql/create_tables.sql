@@ -8,6 +8,7 @@ DROP TABLE IF EXISTS goalEntries ;
 DROP TABLE IF EXISTS calendar ;
 DROP TABLE IF EXISTS mood_groups ;
 DROP TABLE IF EXISTS entry_tags   ;  
+DROP TABLE IF EXISTS fitbit_sleep ;
     
     
     

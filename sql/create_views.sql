@@ -6,6 +6,8 @@ DROP VIEW IF EXISTS v_sleep_trend ;
 DROP VIEW IF EXISTS v_goal_summary ;
 DROP VIEW IF EXISTS v_goal_calendar ;
 DROP VIEW IF EXISTS v_goal_progress_by_month ;
+DROP VIEW IF EXISTS v_sleep_main_per_day ;
+DROP VIEW IF EXISTS v_topics_summary ;
 
 
 CREATE VIEW v_activity_summary AS
