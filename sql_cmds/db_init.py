@@ -47,6 +47,6 @@ def insert_prefs(prefs_dict, db_conn=create_db_conn(str(db_path))):
     
     logger.info("Creating and inserting 'prefs' table and values")
     
-    execute_sql_command(db_conn, insert_query, vals)
+    execute_sql_command(db_conn, insert_query, True, vals)
     db_conn.commit()
     db_conn.close()
