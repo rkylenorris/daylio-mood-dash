@@ -174,3 +174,13 @@ CREATE TABLE IF NOT EXISTS topics (
     covered BOOLEAN DEFAULT 0,
     covered_at DATETIME
 );
+
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    role TEXT DEFAULT 'user',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_login DATETIME
+);
