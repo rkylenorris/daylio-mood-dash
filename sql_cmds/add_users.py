@@ -14,9 +14,9 @@ def add_user(username: str, name: str, password: str, role: UserRole, db_path: s
     sql_cmd = "INSERT INTO users (username, name, password_hash, role) VALUES (?, ?, ?, ?)"
     user_data = (username, name, hashed_password, role.value)
     
-    execute_sql_command(create_db_conn(db_path), sql_cmd, True, *user_data)
+    execute_sql_command(create_db_conn(db_path), sql_cmd, True, user_data)
 
-
+# TODO: Run script to add users, create login page, and set up authentication
 if __name__ == "__main__":
     logins = [
         {
