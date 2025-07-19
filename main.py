@@ -86,6 +86,14 @@ def update_fitbit_sleep():
 def create_streamlit_app():
     from log_setup import logger
     logger.info("Starting Streamlit app...")
+    
+    st.set_page_config(page_title="Mood Dashboard", page_icon="📈", layout="centered")
+    
+    # if "user" not in st.session_state or st.session_state["user"] is None:
+    #     st.warning("Please log in from the Login page.")
+    #     st.stop()
+    
+    
     if "initialized" not in st.session_state:
         logger.info("Initializing Daylio Mood Dashboard...")
         daylio_data_prep()
